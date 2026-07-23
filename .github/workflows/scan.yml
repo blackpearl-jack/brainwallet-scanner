@@ -7,6 +7,8 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -19,16 +21,22 @@ jobs:
           if [ ! -f rockyou.txt ]; then
             curl -L -o rockyou.txt "https://raw.githubusercontent.com/brannondorsey/naive-hashcat/master/rockyou.txt"
           fi
-      - name: Scan
-        run: python3 scanner.py rockyou.txt
-      - name: Upload checkpoint (private)
-        uses: actions/upload-artifact@v4
+      - name: Download last checkpoint
+        uses: actions/download-artifact@v4
         with:
           name: checkpoint
-          path: checkpoint.txt
+          run-id: latest
+        continue-on-error: true
+      - name: Scan
+        run: python3 scanner.py rockyou.txt
       - name: Upload hits (private)
         uses: actions/upload-artifact@v4
         with:
           name: found-btc
           path: FOUND_BTC.txt
           retention-days: 90
+      - name: Upload checkpoint (private)
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkpoint
+          path: checkpoint.txt
