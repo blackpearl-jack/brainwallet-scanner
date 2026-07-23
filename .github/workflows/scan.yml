@@ -21,16 +21,14 @@ jobs:
           fi
       - name: Scan
         run: python3 scanner.py rockyou.txt
-      - name: Upload hits (PRIVATE artifact)
+      - name: Upload checkpoint (private)
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkpoint
+          path: checkpoint.txt
+      - name: Upload hits (private)
         uses: actions/upload-artifact@v4
         with:
           name: found-btc
           path: FOUND_BTC.txt
           retention-days: 90
-      - name: Save checkpoint only
-        run: |
-          git config user.name "Actions"
-          git config user.email "actions@github.com"
-          git add checkpoint.txt
-          git commit -m "Update" || true
-          git push
