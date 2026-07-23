@@ -13,13 +13,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.13'
       - name: Install deps
-        run: pip install bitcoin
+        run: pip install bitcoin -q
       - name: Get wordlist
         run: |
-          if [ ! -f rockyou.txt ]; then
-            curl -L -o rockyou.txt "https://github.com/brannondorsey/naive-hashcat/raw/master/rockyou.txt"
+          if [ ! -f rockyou.txt ] || [ $(wc -c < rockyou.txt) -lt 1000 ]; then
+            echo "Downloading RockYou..."
+            curl -sL -o rockyou.txt \
+              "https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt"
+            echo "Size: $(wc -c < rockyou.txt) bytes"
           fi
       - name: Scan
         run: python3 scanner.py rockyou.txt
