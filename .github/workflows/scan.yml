@@ -25,6 +25,8 @@ jobs:
             echo "Size: $(wc -c < rockyou.txt) bytes"
           fi
       - name: Scan
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
         run: python3 scanner.py rockyou.txt
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
