@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Brainwallet Scanner - GitHub Actions Edition"""
+"""Brainwallet Scanner - Secure GitHub Actions Edition"""
 import hashlib, urllib.request, sys, os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-HITS_FILE = "hits.txt"
 CHECKPOINT = "checkpoint.txt"
 WORKERS = 8
 
@@ -26,7 +25,7 @@ def process(phrase, idx, total):
     if addr is None: return None
     bal = check_bal(addr)
     if bal and bal > 0:
-        return f"[{bal/1e8:.8f} BTC] [{idx}/{total}] {phrase[:50]} | {addr}"
+        return f"[{bal/1e8:.8f} BTC] {phrase[:40]} | {addr}"
     return None
 
 def load_list(path):
@@ -56,6 +55,7 @@ print(f"[*] Range: {start_idx:,} - {batch_end:,} / {total:,}")
 
 hits = 0
 count = 0
+found_data = []
 with ThreadPoolExecutor(max_workers=WORKERS) as ex:
     futures = {}
     for i, w in enumerate(words):
@@ -68,7 +68,7 @@ with ThreadPoolExecutor(max_workers=WORKERS) as ex:
                 if r:
                     hits += 1
                     print(f"FIRE {r}")
-                    with open(HITS_FILE, "a") as fh: fh.write(r + "\n")
+                    found_data.append(r)
             futures = {}
             if count % 50 == 0:
                 pct = (start_idx + count) / total * 100
@@ -76,4 +76,10 @@ with ThreadPoolExecutor(max_workers=WORKERS) as ex:
 
 save_check(batch_end)
 print(f"\n[*] Done: {count} checked, {hits} hits")
-if hits > 0: print("FOUND_BTC=1")
+
+# Save hits ke artifact file (private)
+if found_data:
+    with open("FOUND_BTC.txt", "w") as f:
+        for line in found_data:
+            f.write(line + "\n")
+    print("SAVED_TO_ARTIFACT=1")
